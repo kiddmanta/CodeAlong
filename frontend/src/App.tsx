@@ -85,13 +85,13 @@ function App() {
   const loading = useSelector((state: any) => state.auth.loading);
 
   return (
-    <React.StrictMode>
+    <>
       {loading && <LoadingSpinner />}
       <RouterProvider router={router} />
       <ToastContainer />
       <SuccessToast />
       <ErrorToast />
-    </React.StrictMode>
+    </>
   );
 }
 

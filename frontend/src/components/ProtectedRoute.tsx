@@ -15,6 +15,7 @@ function ProtectedRoute({ Page }: ProtectedRouteProps) {
     if (!loading && !token) {
       navigate('/login');
     }
+   
   }, [token, navigate, loading]);
 
   return <Page />;

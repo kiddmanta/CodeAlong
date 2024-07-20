@@ -28,8 +28,10 @@ const authSlice = createSlice({
       state.token = action.payload.token;
     },
     setLogout: (state) => {
+      console.log("Logging out");
       state.userId = null;
       state.token = null;
+      state.loading = false;
       state.refreshToken = null;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {

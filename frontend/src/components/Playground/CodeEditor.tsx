@@ -8,26 +8,30 @@ import "codemirror/mode/clike/clike"; // For C, C++, Java
 import "codemirror/mode/javascript/javascript"; // For JavaScript
 import "codemirror/mode/python/python"; // For Python
 import { Socket } from "socket.io-client";
+import { useSocket } from "../../socket/SocketContext";
 
 interface CodeEditorProps {
-  socketRef: React.MutableRefObject<Socket | null>;
-  language: "c" | "cpp" | "java" | "javascript" | "python";
+  language: string;
+  editorContent: string;
   roomId: string;
+  setEditorContent: (value: string) => void;
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
-  socketRef,
+  editorContent,
+  setEditorContent,
   language,
   roomId,
 }) => {
   const editorRef = useRef<CodeMirror.EditorFromTextArea | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null); // Separate ref for the textarea
+  const { socket } = useSocket();
 
   useEffect(() => {
     if (!textareaRef.current) return;
-
+    console.log(language)
     const editor = CodeMirror.fromTextArea(textareaRef.current, {
-      mode: language,
+      mode: language === "c" ? "text/x-csrc" : language === "c++" ? "text/x-c++src" : language === "java" ? "text/x-java" : "text/x-python",
       lineNumbers: true,
       lineWrapping: true,
       lineWiseCopyCut: true,
@@ -36,16 +40,17 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       theme: "dracula",
     });
 
-    editor.setSize("100%", 600);
+    editor.setSize(null, 609);
     editorRef.current = editor;
 
     editorRef.current.on("changes", (instance, changes) => {
-      console.log("changes", changes);
-
+      
       const { origin } = changes[0];
       const code = instance.getValue();
-      if (socketRef.current && origin !== "setValue") {
-        socketRef.current.emit("codeChange", { code, roomId });
+      setEditorContent(code);
+     
+      if (socket && origin !== "setValue") {
+        socket.emit("codeChange", { code, roomId });
       }
     });
 
@@ -53,23 +58,35 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       editorRef.current?.toTextArea();
       editorRef.current = null;
     };
-  }, []);
+  }, [editorContent,socket]);
+
 
   useEffect(() => {
-    if (socketRef.current) {
-      socketRef.current.on("codeChange", ({ code }) => {
-        if (editorRef.current && code !== null) {
-          editorRef.current.setValue(code);
-        }
-      });
-    }
+    if (!socket) return;
+
+    socket.on(
+      "setInitialCode",
+      ({ code, roomId }: { code: string; roomId: string }) => {
+        // console.log("setting initial code", code, roomId);
+        socket.emit("codeChange", { code, roomId });
+        editorRef.current?.setValue(code);
+      }
+    );
+
+    socket.on("codeChange", ({ code }) => {
+      // console.log("accepting code change", code);
+      if (editorRef.current && code !== null) {
+        editorRef.current.setValue(code);
+      }
+    });
+
     return () => {
-      socketRef.current?.off("codeChange");
+      socket.off("codeChange");
     };
-  }, [socketRef.current]);
+  }, [socket]);
 
   return (
-    <div className="h-full max-w-4xl">
+    <div className="h-full w-full">
       <textarea
         ref={textareaRef} // Use the new textareaRef here
         id="editor"

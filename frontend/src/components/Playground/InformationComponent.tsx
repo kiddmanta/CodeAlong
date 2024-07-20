@@ -1,21 +1,55 @@
-import React from "react";
+import React, { useState } from "react";
+import LeaveRoomModal from "./LeaveRoomModal";
 
-const InformationComponent = () => {
+const InformationComponent = ({
+  name,
+  handleCopy,
+  handleSave,
+  handleLeave,
+  ownerId,
+  userId,
+}: {
+  name: string;
+  handleCopy: () => void;
+  handleSave: () => void;
+  handleLeave: () => void;
+  ownerId: string;
+  userId: string;
+}) => {
+
+  const [showLeaveModal , setShowLeaveModal] = useState(false);
+  
+
   return (
-    <div className="w-1/6 rounded-r-lg bg-cyan-900 flex flex-col justify-between">
-      <div>
-        <p className="text-left m-3 text-black text-xl text-bold">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Recusandae,
-          aut.
-        </p>
-        <div className="h-px bg-black mx-5"></div>
-      </div>
+    <>
+    {
+      showLeaveModal && (userId === ownerId) &&
+      <LeaveRoomModal 
+        handleLeaveRoom={handleLeave}
+        handleShowLeaveModal={()=>setShowLeaveModal(false)}
+      />
+    }
+      <div className="w-full rounded-r-lg bg-cyan-900 flex-col flex  md:flex md:min-w-64 md:w-64" >
+        <div>
+          <p className="text-left m-3 text-black text-xl font-bold">{name}</p>
+          <div className="h-px bg-black mx-5"></div>
+        </div>
 
-      <div className="flex flex-col">
-        <button className="btn-md btn m-3">Copy Room Id</button>
-        <button className="btn-md btn m-3 mt-0">Save Playground</button>
+        <div className="flex flex-col">
+          <button className="btn-md btn m-3" onClick={handleCopy}>
+            Copy Room Id
+          </button>
+          <button className="btn-md btn m-3 mt-0" onClick={handleSave}>
+            Save Playground
+          </button>
+          <button className="btn-md btn m-3 mt-0" onClick={
+            ()=>setShowLeaveModal(true)
+          }>
+            Leave Playground
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

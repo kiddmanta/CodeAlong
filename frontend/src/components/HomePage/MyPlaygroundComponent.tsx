@@ -10,9 +10,13 @@ type FetchedPlayground = Omit<
   "code" | "input" | "participatedUsers"
 >;
 
-const DropdownComponent = () => {
+const DropdownComponent = ({
+  onClick,
+}: {
+  onClick: (e: React.MouseEvent) => void;
+}) => {
   return (
-    <details className="dropdown dropdown-end">
+    <details className="dropdown dropdown-end" onClick={onClick }>
       <summary className="btn btn-xs bg-transparent border-none m-1">
         <BsThreeDots className="text-white text-lg" />
       </summary>
@@ -28,23 +32,31 @@ const DropdownComponent = () => {
   );
 };
 
-
-
 const MyPlaygroundComponent = ({
   playground,
 }: {
   playground: FetchedPlayground;
 }) => {
-  const name =capitalize(playground.name);
+  const name = capitalize(playground.name);
   const language = capitalize(playground.language);
   const createdAt = playground.createdAt;
   const navigate = useNavigate();
   const timePassed = getTimePassed(createdAt);
+  const roomId = playground.roomId;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation on dropdown click
+  };
 
   return (
-    <div onClick={
-      () => navigate(`/playground/5dd81422-d88c-4f93-b75b-8463c68952c6`)
-    } className="card m-5 mx-2 w-72 h-36 flex flex-row justify-between border hover:cursor-pointer border-stone-800 shadow-md shadow-slate-600 transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-br from-zinc-950 to-slate-700">
+    <div
+      onClick={() => {
+        
+        navigate(`/playground/${roomId}`)
+      }
+    }
+      className="card m-5 mx-2 w-72 h-36 flex flex-row justify-between border hover:cursor-pointer border-stone-800 shadow-md shadow-slate-600 transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-br from-zinc-950 to-slate-700"
+    >
       <div className="p-2 justify-between flex flex-col">
         <div>
           <p className="text-left text-zinc-300 text-bold text-lg">{name}</p>
@@ -55,7 +67,7 @@ const MyPlaygroundComponent = ({
         </div>
       </div>
       <div className="flex items-start ml-2 p-1">
-        <DropdownComponent />
+        <DropdownComponent onClick={handleClick} />
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import type {
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Mutex } from "async-mutex";
 
-import { User, Playground, Token } from "../../types";
+import { User, Playground, Token, Checkpoint } from "../../types";
 import { setLogin, setLogout } from "../auth/authSlice";
 import { pushError } from "../slices/errorSlice";
 
@@ -46,9 +46,12 @@ const baseQueryWithReauth: BaseQueryFn<
   // console.log("Result from baseQuery:", result);
   // console.log(result);
   if (result.error?.status === 401) {
-    if (mutex.isLocked()) {
+    console.log("Reauthenticating");
+    if (!mutex.isLocked()) {
+      console.log("Mutex is unlocked");
       const release = await mutex.acquire();
       try {
+        
         const { refreshToken } = (api.getState() as any).auth;
         const refreshResult = await baseQuery(
           {
@@ -79,15 +82,18 @@ const baseQueryWithReauth: BaseQueryFn<
               description: "Please login again.",
             })
           );
-          api.dispatch(setLogout());
           localStorage.removeItem("token");
           localStorage.removeItem("refreshToken");
+          api.dispatch(setLogout());
+          
         }
       } finally {
         release();
       }
     } else {
+      console.log("Waiting for mutex to unlock");
       await mutex.waitForUnlock();
+      console.log("Mutex unlocked");
       result = await baseQuery(args, api, extraOptions);
     }
   }
@@ -97,7 +103,7 @@ const baseQueryWithReauth: BaseQueryFn<
 export const serverApi = createApi({
   reducerPath: "serverApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Token", "User", "YourPlaygrounds", "JoinedPlaygrounds"],
+  tagTypes: ["Token", "User", "YourPlaygrounds", "JoinedPlaygrounds", "Playground","Checkpoints"],
   endpoints: (builder) => ({
     //auth
     register: builder.mutation<Token, { email: string; password: string ; username : string ; confirmPassword:string }>({
@@ -212,6 +218,70 @@ export const serverApi = createApi({
       }),
     }),
 
+    checkIfParticipated: builder.query<Playground, { roomId : string }>({
+      query: ({roomId}) => ({
+        url: `/api/playground/check-if-participated`,
+        method: "GET",
+        params: { roomId },
+      }),
+      providesTags: ["Playground"],
+      transformResponse: async (response: any, meta, arg) => {
+        return response.data.playground;
+      },
+    }),
+
+    codeExecution: builder.mutation<string, { code: string; language: string , input:string , roomId :string}>({
+      query: (body) => ({
+        url: "/api/playground/execute",
+        method: "POST",
+        body,
+      }),
+      transformResponse: async (response: any, meta, arg) => {
+        return response.data;
+      }
+    }),
+
+    leavePlayground: builder.mutation<void, { roomId : string }>({
+      query: (body) => ({
+        url: "/api/playground/leave-playground",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["JoinedPlaygrounds"],
+    }),
+
+    kickUser: builder.mutation<void, { userId: string; roomId: string }>({
+      query: (body) => ({
+        url: "/api/playground/kick-user",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    createCheckpoint: builder.mutation<void, { playgroundId: string,code:string, }>({
+      query: (body) => ({
+        url: "/api/checkpoint/create",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Checkpoints"],
+      transformResponse: async (response: any, meta, arg) => {
+        return response.data.checkpoint;
+      }
+    }),
+
+    getCheckpoints: builder.query<Checkpoint[], { playgroundId: string }>({
+      query: ({playgroundId}) => (
+        console.log(playgroundId),{
+        url: `/api/checkpoint/get`,
+        method: "GET",
+        params: { playgroundId },
+      }),
+      providesTags: ["Checkpoints"],
+      transformResponse: async (response: any, meta, arg) => {
+        return response.data.checkpoints;
+      }
+    }),
   }),
 });
 
@@ -226,4 +296,10 @@ export const {
   useRegisterMutation,
   useApproveRequestMutation,
   useRejectRequestMutation,
+  useCheckIfParticipatedQuery,
+  useCodeExecutionMutation,
+  useLeavePlaygroundMutation,
+  useKickUserMutation,
+  useCreateCheckpointMutation,
+  useGetCheckpointsQuery,
 } = serverApi;

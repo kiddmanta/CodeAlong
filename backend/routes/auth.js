@@ -8,7 +8,7 @@ const User = require('../models/userModel');
 const { validate } = require('../middlewares/validate');
 
 const userLoginValidationRules = () => [
-    body('email').isEmail().normalizeEmail().withMessage('Invalid email')
+    body('email').trim().isEmail().normalizeEmail().withMessage('Invalid email')
 ];
 
 const userRegisterValidationRules = () => [

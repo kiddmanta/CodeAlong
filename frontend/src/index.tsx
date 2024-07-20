@@ -13,13 +13,13 @@ const root = ReactDOM.createRoot(
 );
 
 root.render(
-  <React.StrictMode>
+  <>
     <Provider store={store}>
       <SocketProvider>
         <App />
       </SocketProvider>
     </Provider>
-  </React.StrictMode>
+  </>
 );
 
-reportWebVitals();
+

@@ -15,8 +15,7 @@ const playgroundSchema = new mongoose.Schema({
     },
     participatedUsers: [
         {
-            type: String,
-            ref: 'User'
+            type: mongoose.Schema.Types.ObjectId, ref: 'User' 
         }
     ],
     input: {
@@ -28,8 +27,7 @@ const playgroundSchema = new mongoose.Schema({
         required: true
     },
     createdBy: {
-        type: String,
-        ref: 'User'
+        type: mongoose.Schema.Types.ObjectId, ref: 'User'
     },
     createdAt: {
         type: String,
@@ -37,7 +35,12 @@ const playgroundSchema = new mongoose.Schema({
     },
     isActive: {
         type: Boolean,
-    }
+    },
+    activeUsers: [
+        {
+            type: mongoose.Schema.Types.ObjectId, ref: 'User'
+        }
+    ]
 });
 
 playgroundSchema.methods.addParticipatedUser = async function (userId) {

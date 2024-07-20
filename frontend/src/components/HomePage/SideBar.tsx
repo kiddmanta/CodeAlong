@@ -80,6 +80,7 @@ const NewPlaygroundModalContent = () => {
               setLanguage(e.target.value);
             }}
           >
+            <option value="c">C</option>
             <option value="c++">C++</option>
             <option value="python">Python</option>
             <option value="java">Java</option>
@@ -150,6 +151,7 @@ const JoinPlaygroundModalContent = () => {
       );
     });
     socket.on("approveJoinRequest", () => {
+      console.log("Request Accepted");
       toast.success(
         <div>
           <h1>Request Accepted</h1>
@@ -165,15 +167,14 @@ const JoinPlaygroundModalContent = () => {
           theme: "dark",
         }
       );
-      console.log(roomId);
       navigate(`/playground/${roomId}`);
     });
 
     return () => {
       socket.off("rejectJoinRequest");
-      socket.off("acceptJoinRequest");
+      socket.off("approveJoinRequest");
     };
-  }, [socket]);
+  }, [socket, roomId, navigate]);
 
   const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -214,12 +215,14 @@ const JoinPlaygroundModalContent = () => {
 };
 
 const SideBar = ({
+  handleSidebarOpen,
   isSidebarOpen,
   setIsSidebarOpen,
   selectedPlayground,
   setSelectedPlayground,
   logoutApiFunction,
 }: {
+  handleSidebarOpen: () => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isSidebarOpen: boolean) => void;
   selectedPlayground: string;
@@ -248,7 +251,10 @@ const SideBar = ({
             className={`${
               selectedPlayground === "my" ? "bg-violet-700" : "bg-violet-500"
             } text-white font-bold py-2 px-4 rounded-md mt-3 mx-2 hover:bg-violet-600 flex items-center justify-between`}
-            onClick={() => setSelectedPlayground("my")}
+            onClick={() => {
+              setSelectedPlayground("my");
+              handleSidebarOpen();
+            }}
           >
             My Playgrounds
             <MdOutlineKeyboardArrowRight className="text-white" />
@@ -259,7 +265,10 @@ const SideBar = ({
                 ? "bg-violet-700"
                 : "bg-violet-500"
             } text-white font-bold py-2 px-4 rounded-md mt-3 mx-2 hover:bg-violet-600 flex items-center justify-between`}
-            onClick={() => setSelectedPlayground("joined")}
+            onClick={() =>{
+              setSelectedPlayground("joined");
+              handleSidebarOpen();
+            }}
           >
             Joined Playgrounds
             <MdOutlineKeyboardArrowRight className="text-white" />

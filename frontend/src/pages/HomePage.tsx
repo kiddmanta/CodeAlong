@@ -105,6 +105,7 @@ const HomePage = () => {
         </div>
 
         <SideBar
+          handleSidebarOpen = {() => setIsSidebarOpen(!isSidebarOpen)}
           logoutApiFunction={handleLogoutClick}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}

@@ -10,13 +10,14 @@ type Playground = {
   _id: string;
   name: string;
   code: string;
-  createdBy: string;
+  createdBy: User;
   language: string;
-  participatedUsers: string[];
+  participatedUsers: User[];
   input: string;
   roomId: string;
   createdAt: string;
   isActive: boolean;
+  activeUsers: User[];
 };
 
 type Token = {
@@ -24,4 +25,14 @@ type Token = {
   refreshToken: string;
 };
 
-export type { User, Playground, Token };
+type Checkpoint = {
+  name: string;
+  _id: string;
+  playgroundId: string;
+  code: string;
+  createdBy: User;
+  createdAt: string;
+  language: string;
+}
+
+export type { User, Playground, Token , Checkpoint};

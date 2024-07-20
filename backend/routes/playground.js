@@ -3,7 +3,7 @@ const router = express.Router();
 const { body } = require('express-validator');
 const languages = require('../utils/constants').languages;
 
-const { createPlayground, checkIfRoomExists, getYourPlaygrounds, getJoinedPlaygrounds, checkPlayground, joinRequest, approveJoinRequest, rejectJoinRequest } = require('../controllers/playground');
+const { createPlayground, checkIfRoomExists, getYourPlaygrounds, getJoinedPlaygrounds, checkPlayground, joinRequest, approveJoinRequest, rejectJoinRequest, checkIfParticipated, executeCode, leavePlayground, kickUser } = require('../controllers/playground');
 const { isAuth } = require('../middlewares/isAuth');
 const { validate } = require('../middlewares/validate');
 
@@ -31,5 +31,9 @@ router.get('/get-joined-playgrounds',getJoinedPlaygrounds)
 router.post('/request-to-join',joinRequest)
 router.post('/approve-join-request',approveJoinRequest)
 router.post('/reject-join-request',rejectJoinRequest)
+router.get('/check-if-participated',checkIfParticipated)
+router.post('/execute',executeCode)
+router.post('/leave-playground',leavePlayground)
+router.post('/kick-user',kickUser)
 
 module.exports = router;

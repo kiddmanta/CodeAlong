@@ -19,6 +19,7 @@ exports.isAuth = asyncHandler(async (req, res, next) => {
             throw new NewError('User not found', 404, { userNotFound: true });
         }
         req.userId = decoded.userId;
+        req.username = user.username;
         next();
     } catch (err) {
         console.error(err.message);

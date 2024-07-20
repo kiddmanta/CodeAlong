@@ -7,10 +7,12 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const userRoutes = require('./routes/auth.js');
 const playgroundRoutes = require('./routes/playground.js');
-const { initializeSocket } = require('./scoket/socket.js');
+const checkpointRoutes = require('./routes/checkpoint.js');
+const { initializeSocket, emitSocketEvent } = require('./scoket/socket.js');
 const axios = require('axios'); // Import axios for making HTTP requests to executor server
 const { error } = require('console');
 const ErrorHandler = require('./middlewares/ErrorHandler.js');
+const NewError = require('./utils/NewError.js');
 
 
 dotenv.config();
@@ -53,27 +55,11 @@ initializeSocket(io);
 
 app.use('/api/users', userRoutes);
 app.use('/api/playground', playgroundRoutes);
+app.use('/api/checkpoint', checkpointRoutes);
 
 app.use(ErrorHandler);
 
-app.post('/api/execute', async (req, res) => {
-    try {
-        // Extract code, language, and input from request body
-        const { code, language, input } = req.body;
-        console.log('Executing code...');
-        // Make HTTP POST request to executor server
-        const response = await axios.post(`${EXEC_PORT}/execute`, {
-            code,
-            language,
-            input
-        });
-        // Forward executor server response to client
-        res.status(response.status).json(response.data);
-    } catch (error) {
-        console.error('Error executing code:', error.message);
-        res.status(500).json({ msg: 'Internal server error' });
-    }
-});
+
 
 httpServer.listen(PORT, () => {
     console.log(`listening on ${PORT}`);
